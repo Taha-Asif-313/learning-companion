@@ -1,16 +1,22 @@
 import { useState } from "react";
 import { Bot, Sparkles, User, Volume2, Square } from "lucide-react";
 import { marked } from "marked";
+import axios from "axios";
+
+const rtlLanguages = ["ur", "hi"];
 
 const MessageBubble = ({ message }) => {
   const isUser = message.role === "user";
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [utterance, setUtterance] = useState(null);
+  const [selectedLang, setSelectedLang] = useState("");
+  const [translatedText, setTranslatedText] = useState("");
+  const [translating, setTranslating] = useState(false);
+  const [translateError, setTranslateError] = useState("");
 
-  // 🔊 Function to start speaking
+  // 🔊 Start speaking
   const handleSpeak = () => {
     if (!message.text || isSpeaking) return;
-
     const newUtterance = new SpeechSynthesisUtterance(message.text);
     newUtterance.lang = "en-US";
     newUtterance.onend = () => setIsSpeaking(false);
@@ -20,11 +26,40 @@ const MessageBubble = ({ message }) => {
     speechSynthesis.speak(newUtterance);
   };
 
-  // ⏹ Function to stop speaking
+  // ⏹ Stop speaking
   const handleStop = () => {
     speechSynthesis.cancel();
     setIsSpeaking(false);
   };
+
+  // 🌍 Translate API call
+  const handleTranslate = async (lang) => {
+    if (!lang || !message.text) return;
+
+    setTranslating(true);
+    setTranslateError("");
+    setTranslatedText("");
+
+    try {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/translate`, {
+        content: message.text,
+        target_language: lang,
+      });
+
+      if (res.data.translated_content) {
+        setTranslatedText(res.data.translated_content);
+      } else {
+        setTranslateError("❌ Translation failed");
+      }
+    } catch (err) {
+      console.error(err);
+      setTranslateError("❌ Error translating");
+    } finally {
+      setTranslating(false);
+    }
+  };
+
+  const isRtl = rtlLanguages.includes(selectedLang);
 
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"} mb-4`}>
@@ -35,16 +70,16 @@ const MessageBubble = ({ message }) => {
       >
         {/* Avatar */}
         <div
-          className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+          className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
             isUser
               ? "bg-blue-600"
-              : "bg-gradient-to-br from-purple-500 to-blue-600"
+              : "bg-blue-600"
           }`}
         >
           {isUser ? (
-            <User size={16} className="text-white" />
+            <User size={20} className="text-white" />
           ) : (
-            <Bot size={16} className="text-white" />
+            <Bot size={20} className="text-white" />
           )}
         </div>
 
@@ -75,9 +110,32 @@ const MessageBubble = ({ message }) => {
             }}
           />
 
-          {/* 🔊 Voice Controls for Assistant */}
+          {/* ✅ Translated text / Loading / Error */}
           {!isUser && (
-            <div className="mt-2 flex items-center gap-2">
+            <div className="mt-2">
+              {translating && (
+                <p className="text-xs text-gray-500 italic">Translating...</p>
+              )}
+              {translateError && (
+                <p className="text-xs text-red-600 italic">{translateError}</p>
+              )}
+              {translatedText && (
+                <p
+                  style={{
+                    direction: isRtl ? "rtl" : "ltr",
+                  }}
+                  className={`leading-relaxed prose text-green-600`}
+                  dangerouslySetInnerHTML={{
+                    __html: marked.parse(translatedText),
+                  }}
+                />
+              )}
+            </div>
+          )}
+
+          {/* 🔊 Voice + 🌍 Translate Controls */}
+          {!isUser && (
+            <div className="mt-2 flex items-center gap-3 flex-wrap">
               {!isSpeaking ? (
                 <button
                   onClick={handleSpeak}
@@ -93,6 +151,23 @@ const MessageBubble = ({ message }) => {
                   <Square size={14} /> Stop
                 </button>
               )}
+
+              {/* 🌍 Translate Dropdown */}
+              <select
+                value={selectedLang}
+                onChange={(e) => {
+                  setSelectedLang(e.target.value);
+                  handleTranslate(e.target.value);
+                }}
+                className="text-xs border border-gray-300 rounded px-2 py-1"
+              >
+                <option value="">🌍 Translate</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+                <option value="ur">Urdu</option>
+                <option value="hi">Hindi</option>
+              </select>
             </div>
           )}
 

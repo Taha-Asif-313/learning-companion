@@ -6,7 +6,7 @@ import {
   X,
   CheckCircle2,
   XCircle,
-  MessageSquare
+  MessageSquare,
 } from "lucide-react";
 import { marked } from "marked";
 
@@ -37,7 +37,7 @@ const McqModal = ({ isOpen, onClose }) => {
       };
 
       const res = await axios.post(
-        "http://192.168.18.26:8000/feedback",
+        `${import.meta.env.VITE_API_URL}/feedback`,
         payload,
         {
           headers: { "Content-Type": "application/json" },

@@ -15,7 +15,7 @@ const LoginPage = () => {
     setMessage(null);
 
     try {
-      const res = await axios.post("http://192.168.18.26:8000/login", {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/login`, {
         username, // ✅ send username
         password,
       });

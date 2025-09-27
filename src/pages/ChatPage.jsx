@@ -19,9 +19,8 @@ import McqModal from "../components/McqsModal";
 
 const INTRO = {
   title: "Hi — I'm your study tutor",
-  subtitle:
-    "I'll guide you through the book, explain concepts, give summaries and quizzes.",
-  book: "Principles of Data Communication",
+  subtitle: "I'll guide you through the book, explain concepts and quizzes.",
+  book: "Computer Science",
 };
 
 const STORAGE_KEY = "study_tutor_conversation_v1";
@@ -75,7 +74,7 @@ export default function ChatPage() {
 
   async function sendMessageToAPI(userText) {
     try {
-      const res = await axios.post("http://192.168.18.26:8000/chat", {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/chat`, {
         session_id: localStorage.getItem("token"),
         student_input: userText,
       });
@@ -124,6 +123,7 @@ export default function ChatPage() {
 
   const clearChat = () => {
     if (window.confirm("Clear all messages?")) {
+      localStorage.clear();
       setMessages([
         {
           id: "sys-1",
@@ -143,12 +143,14 @@ export default function ChatPage() {
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center shadow-sm">
-                  <BookOpen size={20} className="text-white" />
+                <div className="w-10 h-10 flex items-center justify-center">
+                  <BookOpen size={30} className="text-blue-600" />
                 </div>
               </div>
               <div>
-                <span className="font-semibold text-gray-800">Study Tutor</span>
+                <span className="font-semibold text-gray-800">
+                  Learning Companian
+                </span>
                 <span className="block text-xs text-gray-500">
                   {INTRO.book}
                 </span>
@@ -158,15 +160,9 @@ export default function ChatPage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={clearChat}
-                className="text-xs px-3 py-1 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+                className="text-sm px-3 py-1 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
               >
                 Clear Chat
-              </button>
-              <button
-                onClick={() => setShowIntro(true)}
-                className="p-2 hover:bg-white rounded-xl transition-colors"
-              >
-                <X size={18} className="text-gray-500" />
               </button>
             </div>
           </div>
@@ -214,7 +210,7 @@ export default function ChatPage() {
                   onClick={() => handleQuickPrompt("Give me a chapter summary")}
                   className="px-3 py-1 text-xs bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors font-medium"
                 >
-                  Summary
+                  Translate
                 </button> */}
               </div>
             </div>
@@ -222,15 +218,15 @@ export default function ChatPage() {
             <button
               type="submit"
               disabled={loading || !input.trim()}
-              className="bg-gradient-to-br from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-md"
+              className="bg-blue-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-md"
             >
               <Send size={16} />
-              {loading ? "..." : "Send"}
+              {loading ? "Sending..." : "Send"}
             </button>
           </div>
 
           <div className="max-w-3xl mx-auto mt-3 flex justify-center">
-            <div className="flex gap-2 flex-wrap justify-center">
+            {/* <div className="flex gap-2 flex-wrap justify-center">
               <button
                 type="button"
                 onClick={() => handleQuickPrompt("Explain packet switching")}
@@ -254,7 +250,7 @@ export default function ChatPage() {
               >
                 TCP vs UDP
               </button>
-            </div>
+            </div> */}
           </div>
         </form>
       </main>
